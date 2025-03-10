@@ -96,7 +96,15 @@
     <QtUic Include="FileManager.ui" />
     <QtMoc Include="FileManager.h" />
     <ClCompile Include="FileManager.cpp" />
+    <ClCompile Include="FileModel.cpp" />
+    <ClCompile Include="FileItemDelegate.cpp" />
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="FileModel.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="FileItemDelegate.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
