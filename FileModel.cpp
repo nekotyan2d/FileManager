@@ -4,7 +4,7 @@
 FileModel::FileModel(QObject* parent)
     : QAbstractItemModel(parent)
 {
-    setPath(QDir::currentPath());
+    setPath(QDir::homePath());
 }
 
 FileModel::~FileModel()
