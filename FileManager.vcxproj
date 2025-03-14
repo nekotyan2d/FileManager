@@ -95,6 +95,7 @@
     <QtRcc Include="FileManager.qrc" />
     <QtUic Include="FileManager.ui" />
     <QtMoc Include="FileManager.h" />
+    <ClCompile Include="DirTreeModel.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="FileModel.cpp" />
     <ClCompile Include="FileItemDelegate.cpp" />
@@ -105,6 +106,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="FileItemDelegate.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="DirTreeModel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

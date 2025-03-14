@@ -46,12 +46,18 @@
     <ClCompile Include="FileItemDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DirTreeModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="FileModel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="FileItemDelegate.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="DirTreeModel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

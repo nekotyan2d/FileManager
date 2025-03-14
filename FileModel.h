@@ -24,6 +24,7 @@ public:
 	void setPath(const QString& path);
 	QString currentPath() const { return currentDir.absolutePath(); };
 
+	bool deleteFile(const QModelIndex& index);
 private:
 	QDir currentDir;
 	QFileInfoList fileList;

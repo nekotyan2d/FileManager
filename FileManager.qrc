@@ -1,4 +1,5 @@
 <RCC>
-    <qresource prefix="FileManager">
+    <qresource prefix="/FileManager">
+        <file>Resources/icon.png</file>
     </qresource>
 </RCC>

@@ -96,3 +96,30 @@ QString FileModel::sizeToString(qint64 size) const {
 		return QString("%1 ТБ").arg(size / TB);
     }
 }
+
+bool FileModel::deleteFile(const QModelIndex& index) {
+	if (!index.isValid()) {
+		return false;
+	}
+
+	QFileInfo fileInfo = fileList.at(index.row());
+    bool success = false;
+
+	beginRemoveRows(QModelIndex(), index.row(), index.row());
+
+	if (fileInfo.isDir()) {
+		QDir dir(fileInfo.absoluteFilePath());
+		success = dir.removeRecursively();
+	}
+	else {
+		success = QFile::remove(fileInfo.absoluteFilePath());
+	}
+
+    if (success) {
+        fileList.removeAt(index.row());
+    }
+    
+	endRemoveRows();
+
+	return success;
+}

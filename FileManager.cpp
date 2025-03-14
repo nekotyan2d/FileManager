@@ -1,4 +1,5 @@
 ﻿#include "FileManager.h"
+#include <QFileSystemModel>
 
 FileManager::FileManager(QWidget *parent)
     : QMainWindow(parent)
@@ -10,6 +11,10 @@ FileManager::FileManager(QWidget *parent)
     ui.listView->setItemDelegate(new FileItemDelegate(ui.listView));
     ui.listView->setViewMode(QListView::ListMode);
     ui.listView->setResizeMode(QListView::Adjust);
+
+	QFileSystemModel* treeModel = new QFileSystemModel(this);
+	treeModel->setRootPath(QDir::homePath());
+	ui.treeView->setModel(treeModel);
 
     connect(ui.listView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FileManager::on_listView_selectionChanged);
 
@@ -57,32 +62,11 @@ void FileManager::keyPressEvent(QKeyEvent* event) {
 }
 
 void FileManager::on_deleteButton_clicked() {
-    /*QItemSelectionModel* selectionModel = ui.listView->selectionModel();
-    QModelIndexList selectedIndexes = selectionModel->selectedRows();
-
-    if (selectedIndexes.isEmpty()) return;
-
-    QStringList filePaths;
-    for (const QModelIndex& index : selectedIndexes) {
-        filePaths << fileModel->filePath(index);
+	bool result = fileModel->deleteFile(ui.listView->currentIndex());
+    if (result) {
+		QMessageBox::information(this, "Удаление", "Файл успешно удален");
     }
-
-    QMessageBox::StandardButton reply = QMessageBox::question(
-        this, "Удаление", "Вы уверены, что хотите удалить " + QString::number(filePaths.size()) + " элементов?",
-        QMessageBox::Yes | QMessageBox::No);
-
-    if (reply == QMessageBox::Yes) {
-        bool allDeleted = true;
-        for (const QModelIndex& index : selectedIndexes) {
-            if (!fileModel->remove(index)) {
-                allDeleted = false;
-            }
-        }
-        if (allDeleted) {
-            QMessageBox::information(this, "Удаление", "Все файлы успешно удалены.");
-        }
-        else {
-            QMessageBox::warning(this, "Удаление", "Не удалось удалить некоторые файлы.");
-        }
-    }*/
+    else {
+		QMessageBox::warning(this, "Удаление", "Не удалось удалить файл");
+    }
 }
