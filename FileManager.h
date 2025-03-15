@@ -5,7 +5,9 @@
 #include <QKeyEvent>
 #include "ui_FileManager.h"
 #include "FileModel.h"
+#include "DirTreeModel.h"
 #include "FileItemDelegate.h"
+#include <QSplitter>
 
 class FileManager : public QMainWindow
 {
@@ -18,11 +20,24 @@ public:
 private:
     Ui::FileManagerClass ui;
 	FileModel* fileModel;
+	DirTreeModel* treeModel;
+
+    void expandToIndex(QTreeView* tree, const QModelIndex& index) {
+        QModelIndex parent = index;
+        while (parent.isValid()) {
+            tree->expand(parent);
+            parent = parent.parent();
+        }
+    }
+
+    void expandSideTreeToPath(QString path);
 private slots:
 	void on_pathLineEdit_returnPressed();
 
 	void on_listView_doubleClicked(const QModelIndex& index);
 	void on_listView_selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+
+	void on_treeView_doubleClicked(const QModelIndex& index);
 
 	void on_deleteButton_clicked();
 
