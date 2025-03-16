@@ -49,6 +49,9 @@
     <ClCompile Include="DirTreeModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DirTreeDelegate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="FileModel.h">
@@ -60,5 +63,11 @@
     <QtMoc Include="DirTreeModel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="DirTreeDelegate.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Styles\app.qss" />
   </ItemGroup>
 </Project>

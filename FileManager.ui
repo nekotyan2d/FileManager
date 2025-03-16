@@ -15,17 +15,44 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item>
-     <layout class="QHBoxLayout" name="mainLayout">
-      <item>
-       <layout class="QVBoxLayout" name="sideBar">
+     <widget class="QSplitter" name="mainSplitter">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+      <widget class="QWidget" name="sideWidget">
+       <layout class="QVBoxLayout" name="sideLayout">
         <item>
          <widget class="QTreeView" name="treeView"/>
         </item>
        </layout>
-      </item>
-      <item>
+      </widget>
+      <widget class="QWidget" name="contentWidget">
        <layout class="QVBoxLayout" name="contentLayout">
+        <property name="leftMargin">
+         <number>8</number>
+        </property>
+        <property name="topMargin">
+         <number>8</number>
+        </property>
+        <property name="rightMargin">
+         <number>8</number>
+        </property>
+        <property name="bottomMargin">
+         <number>8</number>
+        </property>
         <item>
          <widget class="QLineEdit" name="pathLineEdit">
           <property name="font">
@@ -38,7 +65,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
           <property name="spacing">
-           <number>0</number>
+           <number>8</number>
           </property>
           <property name="sizeConstraint">
            <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
@@ -144,8 +171,8 @@
          </widget>
         </item>
        </layout>
-      </item>
-     </layout>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>

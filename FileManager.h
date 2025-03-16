@@ -7,6 +7,7 @@
 #include "FileModel.h"
 #include "DirTreeModel.h"
 #include "FileItemDelegate.h"
+#include "DirTreeDelegate.h"
 #include <QSplitter>
 
 class FileManager : public QMainWindow
@@ -31,6 +32,7 @@ private:
     }
 
     void expandSideTreeToPath(QString path);
+	void enableActions(bool enable);
 private slots:
 	void on_pathLineEdit_returnPressed();
 
