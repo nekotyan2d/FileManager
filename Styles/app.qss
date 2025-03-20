@@ -51,3 +51,19 @@ QTreeView::item {
 QSplitter::handle {
 	background-color: #3e3e3e;
 }
+
+QMenu {
+	background-color: #272727;
+	border-radius: 8px;
+	padding: 8px;
+	border: none;
+}
+
+QMenu::item {
+	padding: 8px;
+}
+
+QMenu::item:selected {
+	background-color: #3e3e3e;
+	border-radius: 8px;
+}

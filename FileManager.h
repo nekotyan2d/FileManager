@@ -9,6 +9,7 @@
 #include "FileItemDelegate.h"
 #include "DirTreeDelegate.h"
 #include <QSplitter>
+#include <QMenu>
 
 class FileManager : public QMainWindow
 {
@@ -38,6 +39,7 @@ private slots:
 
 	void on_listView_doubleClicked(const QModelIndex& index);
 	void on_listView_selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+	void on_listView_customContextMenuRequested(const QPoint& pos);
 
 	void on_treeView_doubleClicked(const QModelIndex& index);
 

@@ -16,6 +16,8 @@ FileManager::FileManager(QWidget *parent)
     ui.listView->setViewMode(QListView::ListMode);
     ui.listView->setResizeMode(QListView::Adjust);
 
+    ui.listView->setContextMenuPolicy(Qt::CustomContextMenu);
+
     ui.listView->setUniformItemSizes(true);
     ui.treeView->setUniformRowHeights(true);
 
@@ -86,6 +88,26 @@ void FileManager::on_treeView_doubleClicked(const QModelIndex& index) {
 void FileManager::on_listView_selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
 	bool hasSelection = !selected.isEmpty();
 	enableActions(hasSelection);
+}
+
+void FileManager::on_listView_customContextMenuRequested(const QPoint& pos) {
+	QModelIndex index = ui.listView->indexAt(pos);
+    if (!index.isValid()) {
+		return;
+	}
+
+	QMenu contextMenu(this);
+	QAction* openAction = contextMenu.addAction("Открыть");
+	QAction* deleteAction = contextMenu.addAction("Удалить");
+	deleteAction->setIcon(QIcon(":/FileManager/Resources/delete.svg"));
+
+	QAction* selectedItem = contextMenu.exec(ui.listView->mapToGlobal(pos));
+    if (selectedItem == openAction) {
+		on_listView_doubleClicked(index);
+	}
+    else if (selectedItem == deleteAction) {
+		on_deleteButton_clicked();
+	}
 }
 
 void FileManager::enableActions(bool enable) {

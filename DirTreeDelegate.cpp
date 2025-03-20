@@ -15,6 +15,8 @@ void DirTreeDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 	rect.setWidth(option.widget->width());
 
     if (opt.state & QStyle::State_Selected) {
+        /*painter->setPen(QColor("#3e3e3e"));
+        painter->drawRoundedRect(rect, 8, 8);*/
         painter->fillRect(rect, QColor("#3e3e3e"));
     }
     else if (opt.state & QStyle::State_MouseOver) {

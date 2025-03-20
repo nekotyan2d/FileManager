@@ -2,5 +2,6 @@
     <qresource prefix="/FileManager">
         <file>Resources/icon.png</file>
         <file>Styles/app.qss</file>
+        <file>Resources/delete.svg</file>
     </qresource>
 </RCC>
