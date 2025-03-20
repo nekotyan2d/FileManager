@@ -5,13 +5,28 @@ DirTreeModel::DirTreeModel(QObject* parent)
     setRootToDrives();
 }
 
+DirTreeModel::~DirTreeModel() {
+    for (Worker* worker : activeWorkers.values()) {
+        if (worker->thread()) {
+            worker->thread()->quit();
+            worker->thread()->wait();
+        }
+        delete worker;
+    }
+    activeWorkers.clear();
+    delete root;
+}
+
 void DirTreeModel::setRootToDrives() {
     beginResetModel();
     delete root;
     root = new Node("");
     QFileInfoList drives = QDir::drives();
+	QFileIconProvider iconProvider;
     for (const QFileInfo& drive : drives) {
         Node* driveNode = new Node(drive.absoluteFilePath(), root);
+		driveNode->icon = iconProvider.icon(drive);
+		driveNode->hasChildren = 1;
         root->children.append(driveNode);
         nodeCache[driveNode->path] = driveNode;
     }
@@ -19,33 +34,87 @@ void DirTreeModel::setRootToDrives() {
     endResetModel();
 }
 
-void DirTreeModel::populateNode(Node* node) const {
-    if (node->populated) {
+void DirTreeModel::populateNode(Node* node) {
+    if (node->populated || node->isLoading) return;
+
+    node->isLoading = true;
+
+    QModelIndex nodeIndex = indexForNode(node);
+    if (nodeIndex.isValid()) {
+        emit dataChanged(nodeIndex, nodeIndex, QVector<int>{Qt::DisplayRole});
+    }
+
+    Worker* worker = new Worker(node->path);
+    QThread* thread = new QThread(this);
+    worker->moveToThread(thread);
+
+    connect(thread, &QThread::started, worker, &Worker::process);
+    connect(worker, &Worker::finished, this, &DirTreeModel::onPopulateFinished);
+    connect(worker, &QObject::destroyed, this, &DirTreeModel::onWorkerDestroyed);
+    connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+
+    activeWorkers[node] = worker;
+
+    thread->start();
+}
+
+void DirTreeModel::onPopulateFinished(const QFileInfoList& dirList) {
+    Worker* worker = qobject_cast<Worker*>(sender());
+    if (!worker) {
         return;
     }
 
-    QDir dir(node->path);
-    node->dirList = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-    node->children.clear();
-    for (const QFileInfo& info : node->dirList) {
-        Node* child = new Node(info.absoluteFilePath(), node);
-        node->children.append(child);
-        nodeCache[child->path] = child;
+    Node* node = activeWorkers.key(worker);
+    if (!node) {
+        worker->deleteLater();
+        return;
     }
-    node->populated = true;
-}
 
-void DirTreeModel::preFetchChildren(const QModelIndex& parent) const {
-    Node* parentNode = nodeFromIndex(parent);
-    if (!parentNode->populated) {
-        populateNode(parentNode);
+	QFileIconProvider iconProvider;
+	QModelIndex parentIndex = indexForNode(node);
+    node->dirList = dirList;
+
+    if (parentIndex.isValid() && dirList.size() > 0) {
+        beginInsertRows(parentIndex, 0, dirList.size() - 1);
+
+        for (const QFileInfo& info : dirList) {
+            Node* child = new Node(info.absoluteFilePath(), node);
+			child->icon = iconProvider.icon(info);
+            child->hasChildren = -1;
+            node->children.append(child);
+            nodeCache[child->path] = child;
+        }
+
+        node->isLoading = false;
+        node->populated = true;
+        endInsertRows();
+
+        emit dataChanged(parentIndex, parentIndex, QVector<int>{Qt::DisplayRole});
     }
-    // предзагрузка на 1 уровень ниже
-    for (Node* child : parentNode->children) {
-        if (!child->populated && hasChildren(index(parentNode->children.indexOf(child), 0, parent))) {
-            populateNode(child);
+    else {
+        node->isLoading = false;
+        node->populated = true;
+        
+        if (parentIndex.isValid()) {
+            emit dataChanged(parentIndex, parentIndex, QVector<int>{Qt::DisplayRole});
         }
     }
+    
+
+    activeWorkers.remove(node);
+    worker->deleteLater();
+}
+
+void DirTreeModel::onWorkerDestroyed(QObject* worker) {
+    Node* node = activeWorkers.key(static_cast<Worker*>(worker));
+	if (node) activeWorkers.remove(node);
+}
+
+void DirTreeModel::loadNode(const QModelIndex& index) {
+    Node* node = nodeFromIndex(index);
+	if (!node->populated && !node->isLoading) {
+		populateNode(node);
+	}
 }
 
 QModelIndex DirTreeModel::index(int row, int column, const QModelIndex& parent) const {
@@ -55,8 +124,7 @@ QModelIndex DirTreeModel::index(int row, int column, const QModelIndex& parent) 
 
     Node* parentNode = nodeFromIndex(parent);
     if (!parentNode->populated) {
-        populateNode(parentNode);
-        preFetchChildren(parent);
+        return QModelIndex();
     }
 
     if (row >= parentNode->children.count()) {
@@ -86,7 +154,7 @@ QModelIndex DirTreeModel::parent(const QModelIndex& index) const {
 int DirTreeModel::rowCount(const QModelIndex& parent) const {
     Node* parentNode = nodeFromIndex(parent);
     if (!parentNode->populated) {
-        populateNode(parentNode);
+        return 0;
     }
     return parentNode->children.count();
 }
@@ -107,9 +175,12 @@ QVariant DirTreeModel::data(const QModelIndex& index, int role) const {
 
     switch (role) {
     case Qt::DisplayRole:
+        if (node->isLoading) {
+            return "Loading...";
+        }
         return dirInfo.fileName().isEmpty() ? node->path : dirInfo.fileName();
     case Qt::DecorationRole:
-        return iconProvider.icon(dirInfo);
+        return node->icon;
     case Qt::UserRole:
 		return node->path;
     default:
@@ -119,9 +190,12 @@ QVariant DirTreeModel::data(const QModelIndex& index, int role) const {
 
 bool DirTreeModel::hasChildren(const QModelIndex& parent) const {
     Node* node = nodeFromIndex(parent);
-    QDir dir(node->path);
-    dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
-    return dir.entryList().count() > 0;
+	if (node->hasChildren == -1) {
+		QDir dir(node->path);
+        dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+		node->hasChildren = dir.count() > 0 ? 1 : 0;
+	}
+    return node->hasChildren == 1;
 }
 
 DirTreeModel::Node* DirTreeModel::nodeFromIndex(const QModelIndex& index) const {
@@ -129,6 +203,15 @@ DirTreeModel::Node* DirTreeModel::nodeFromIndex(const QModelIndex& index) const 
         return root;
     }
     return static_cast<Node*>(index.internalPointer());
+}
+
+QModelIndex DirTreeModel::indexForNode(Node* node) const {
+    if (node == root) {
+        return QModelIndex();
+    }
+    Node* parentNode = node->parent;
+    int row = parentNode->children.indexOf(node);
+    return createIndex(row, 0, node);
 }
 
 QModelIndex DirTreeModel::expandToPath(const QString& path) {
@@ -142,9 +225,10 @@ QModelIndex DirTreeModel::expandToPath(const QString& path) {
     QString drivePath;
     for (int row = 0; row < rowCount(QModelIndex()); ++row) {
         QModelIndex driveIndex = index(row, 0, QModelIndex());
-        drivePath = driveIndex.data().toString();
+        drivePath = driveIndex.data(Qt::UserRole).toString();
         if (cleanPath.startsWith(drivePath, Qt::CaseInsensitive)) {
             currentIndex = driveIndex;
+            loadNode(currentIndex);
             break;
         }
     }
@@ -161,9 +245,13 @@ QModelIndex DirTreeModel::expandToPath(const QString& path) {
 
     for (const QString& segment : segments) {
         Node* currentNode = nodeFromIndex(currentIndex);
-        if (!currentNode->populated) {
-            populateNode(currentNode);
-            preFetchChildren(currentIndex);
+        if (!currentNode->populated && !currentNode->isLoading) {
+            loadNode(currentIndex);
+
+            while (currentNode->isLoading) {
+                QThread::msleep(10);
+                QCoreApplication::processEvents();
+            }
         }
 
         bool found = false;
@@ -179,7 +267,7 @@ QModelIndex DirTreeModel::expandToPath(const QString& path) {
         }
 
         if (!found) {
-            return currentIndex;
+            break;
         }
     }
 

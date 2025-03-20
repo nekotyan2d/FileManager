@@ -16,8 +16,12 @@ FileManager::FileManager(QWidget *parent)
     ui.listView->setViewMode(QListView::ListMode);
     ui.listView->setResizeMode(QListView::Adjust);
 
+    ui.listView->setUniformItemSizes(true);
+    ui.treeView->setUniformRowHeights(true);
+
 	treeModel = new DirTreeModel(nullptr);
     treeModel->setRootToDrives();
+    connect(ui.treeView, &QTreeView::expanded, treeModel, &DirTreeModel::loadNode);
 
 	ui.treeView->setModel(treeModel);
 	ui.treeView->header()->hide();
