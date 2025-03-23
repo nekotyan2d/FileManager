@@ -43,7 +43,7 @@
     <ClCompile Include="FileModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileItemDelegate.cpp">
+    <ClCompile Include="FileModelDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DirTreeModel.cpp">
@@ -57,7 +57,7 @@
     <QtMoc Include="FileModel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="FileItemDelegate.h">
+    <QtMoc Include="FileModelDelegate.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="DirTreeModel.h">

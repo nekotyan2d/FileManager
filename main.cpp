@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
     }
 
 	w.setWindowIcon(QIcon(":/FileManager/Resources/icon.png"));
+	w.setMinimumSize(1000, 600);
     w.show();
     return a.exec();
 }

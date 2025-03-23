@@ -1,4 +1,4 @@
-﻿#include "FileItemDelegate.h"
+﻿#include "FileModelDelegate.h"
 
 FileItemDelegate::FileItemDelegate(QObject* parent)
 	: QStyledItemDelegate(parent)

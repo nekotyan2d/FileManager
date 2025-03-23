@@ -15,14 +15,21 @@ void FileModel::setPath(const QString& path)
 {
     beginResetModel();
     currentDir.setPath(path);
+	emit pathChanged(path);
     refreshModel();
     endResetModel();
 }
 
 void FileModel::refreshModel()
 {
-    fileList = currentDir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot,
-        QDir::Name | QDir::DirsFirst);
+	fileList.clear();
+	for (const auto& file : currentDir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot,
+		QDir::Name | QDir::DirsFirst)) {
+		File f;
+		f.info = file;
+		f.icon = QFileIconProvider().icon(file);
+		fileList.push_back(f);
+	}
 }
 
 QModelIndex FileModel::index(int row, int column, const QModelIndex& parent) const
@@ -43,7 +50,7 @@ int FileModel::rowCount(const QModelIndex& parent) const
 {
     if (parent.isValid())
         return 0;
-    return fileList.count();
+    return fileList.size();
 }
 
 QVariant FileModel::data(const QModelIndex& index, int role) const
@@ -51,24 +58,23 @@ QVariant FileModel::data(const QModelIndex& index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    const QFileInfo& fileInfo = fileList.at(index.row());
-    QFileIconProvider iconProvider;
+    const File& file = fileList.at(index.row());
 
     switch (role) {
         case Qt::DisplayRole:
-            return fileInfo.fileName();
+            return file.info.fileName();
         case Qt::DecorationRole:
-            return iconProvider.icon(fileInfo);
+            return file.icon;
         case Qt::UserRole: // размер
-            return fileInfo.isDir() ? QVariant() : fileInfo.size();
+            return file.info.isDir() ? QVariant() : file.info.size();
         case Qt::UserRole + 1: // тип
-            return fileInfo.isDir() ? "Папка" : fileInfo.completeSuffix();
+            return file.info.isDir() ? "Папка" : file.info.completeSuffix();
         case Qt::UserRole + 2: // путь
-            return fileInfo.absoluteFilePath();
+            return file.info.absoluteFilePath();
         case Qt::UserRole + 3:
-			return fileInfo.isDir() ? QVariant() : sizeToString(fileInfo.size());
+			return file.info.isDir() ? QVariant() : sizeToString(file.info.size());
         case Qt::UserRole + 4:
-			return fileInfo.lastModified().toString("dd.MM.yyyy hh:mm");
+			return file.info.lastModified().toString("dd.MM.yyyy hh:mm");
         default:
             return QVariant();
     }
@@ -102,24 +108,82 @@ bool FileModel::deleteFile(const QModelIndex& index) {
 		return false;
 	}
 
-	QFileInfo fileInfo = fileList.at(index.row());
+	if (QMessageBox::question(nullptr, "Удаление", "Вы уверены, что хотите удалить файл?", QMessageBox::Yes | QMessageBox::Cancel) == QMessageBox::No) {
+		return false;
+    }
+
+	File file = fileList.at(index.row());
     bool success = false;
 
 	beginRemoveRows(QModelIndex(), index.row(), index.row());
 
-	if (fileInfo.isDir()) {
-		QDir dir(fileInfo.absoluteFilePath());
+	if (file.info.isDir()) {
+		QDir dir(file.info.absoluteFilePath());
 		success = dir.removeRecursively();
 	}
 	else {
-		success = QFile::remove(fileInfo.absoluteFilePath());
+		success = QFile::remove(file.info.absoluteFilePath());
 	}
 
     if (success) {
-        fileList.removeAt(index.row());
+        fileList.erase(fileList.begin() + index.row());
     }
     
 	endRemoveRows();
+
+	return success;
+}
+
+bool FileModel::moveFile(const QModelIndex& index, const QString& newPath) {
+    if (!index.isValid()) {
+        return false;
+    }
+
+	File file = fileList.at(index.row());
+    bool success = false;
+
+	beginRemoveRows(QModelIndex(), index.row(), index.row());
+	QString newFilePath = newPath + "/" + file.info.fileName();
+	if (file.info.isDir()) {
+		QDir dir(file.info.absoluteFilePath());
+		success = dir.rename(file.info.absoluteFilePath(), newFilePath);
+	}
+	else {
+		success = QFile::rename(file.info.absoluteFilePath(), newFilePath);
+	}
+
+	if (success) {
+		fileList.erase(fileList.begin() + index.row());
+	}
+
+	endRemoveRows();
+
+	if (QMessageBox::question(nullptr, "Перемещение", "Перейти к файлу?", QMessageBox::Open | QMessageBox::Cancel) == QMessageBox::Open) {
+        setPath(newPath);
+	}
+
+    return success;
+}
+
+bool FileModel::copyFile(const QModelIndex& index, const QString& path) {
+	if (!index.isValid()) {
+		return false;
+	}
+
+	File file = fileList.at(index.row());
+	bool success = false;
+
+	QString newFilePath = path + "/" + file.info.fileName();
+	if (file.info.isDir()) {
+		// доделать
+	}
+	else {
+		success = QFile::copy(file.info.absoluteFilePath(), newFilePath);
+	}
+
+	if (QMessageBox::question(nullptr, "Копирование", "Перейти к файлу?", QMessageBox::Open | QMessageBox::Cancel) == QMessageBox::Open) {
+		setPath(path);
+	}
 
 	return success;
 }

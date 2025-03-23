@@ -99,14 +99,14 @@
     <ClCompile Include="DirTreeModel.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="FileModel.cpp" />
-    <ClCompile Include="FileItemDelegate.cpp" />
+    <ClCompile Include="FileModelDelegate.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="FileModel.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="FileItemDelegate.h" />
+    <QtMoc Include="FileModelDelegate.h" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="DirTreeModel.h" />

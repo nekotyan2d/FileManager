@@ -6,10 +6,12 @@
 #include "ui_FileManager.h"
 #include "FileModel.h"
 #include "DirTreeModel.h"
-#include "FileItemDelegate.h"
+#include "FileModelDelegate.h"
 #include "DirTreeDelegate.h"
 #include <QSplitter>
 #include <QMenu>
+#include <QFile>
+#include <QFileDialog>
 
 class FileManager : public QMainWindow
 {
@@ -34,6 +36,8 @@ private:
 
     void expandSideTreeToPath(QString path);
 	void enableActions(bool enable);
+	void pathChanged(const QString& newPath);
+	void initSideBar();
 private slots:
 	void on_pathLineEdit_returnPressed();
 
@@ -44,6 +48,9 @@ private slots:
 	void on_treeView_doubleClicked(const QModelIndex& index);
 
 	void on_deleteButton_clicked();
+	void on_moveButton_clicked();
+	void on_copyButton_clicked();
+	void on_refreshButton_clicked();
 
 	void keyPressEvent(QKeyEvent* event) override;
 };

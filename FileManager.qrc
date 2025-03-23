@@ -3,5 +3,9 @@
         <file>Resources/icon.png</file>
         <file>Styles/app.qss</file>
         <file>Resources/delete.svg</file>
+        <file>Resources/copy.svg</file>
+        <file>Resources/move.svg</file>
+        <file>Resources/refresh.svg</file>
+        <file>Resources/open.svg</file>
     </qresource>
 </RCC>

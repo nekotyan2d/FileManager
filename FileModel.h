@@ -4,6 +4,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QFileIconProvider>
+#include <QMessageBox>
+#include <vector>
 
 class FileModel : public QAbstractItemModel
 {
@@ -25,9 +27,18 @@ public:
 	QString currentPath() const { return currentDir.absolutePath(); };
 
 	bool deleteFile(const QModelIndex& index);
+	bool moveFile(const QModelIndex& index, const QString& newPath);
+	bool copyFile(const QModelIndex& index, const QString& path);
+
+	struct File {
+		QFileInfo info;
+		QIcon icon;
+	};
+signals:
+	void pathChanged(const QString& newPath);
 private:
 	QDir currentDir;
-	QFileInfoList fileList;
+	std::vector<File> fileList;
 
 
 	void refreshModel();
