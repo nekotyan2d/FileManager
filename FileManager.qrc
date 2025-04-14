@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/FileManager">
+        <file>Resources/copy.svg</file>
+        <file>Resources/delete.svg</file>
+        <file>Resources/icon.png</file>
+        <file>Resources/move.svg</file>
+        <file>Resources/open.svg</file>
+        <file>Resources/refresh.svg</file>
+        <file>Styles/app.qss</file>
+    </qresource>
+</RCC>
