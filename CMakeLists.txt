@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(FileManager LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Svg)
 
 qt_standard_project_setup()
 
@@ -15,14 +15,25 @@ qt_add_executable(FileManager
     DirTreeModel.h DirTreeModel.cpp
     FileModelDelegate.h FileModelDelegate.cpp
     DirTreeDelegate.h DirTreeDelegate.cpp
-    FileManager.qrc
-    FileManager.qrc
+)
+
+qt_add_resources(FileManager "app_resources"
+    PREFIX "/FileManager"
+    FILES
+        Resources/copy.svg
+        Resources/delete.svg
+        Resources/icon.png
+        Resources/move.svg
+        Resources/open.svg
+        Resources/refresh.svg
+        Styles/app.qss
 )
 
 target_link_libraries(FileManager
     PRIVATE
         Qt::Core
         Qt::Widgets
+        Qt::Svg
 )
 
 include(GNUInstallDirs)

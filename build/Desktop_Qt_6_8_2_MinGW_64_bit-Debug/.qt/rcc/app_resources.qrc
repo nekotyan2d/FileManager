@@ -1,0 +1,12 @@
+<RCC>
+  <qresource prefix="/FileManager">
+    <file alias="Resources/copy.svg">C:/Users/user/projects/FileManager/Resources/copy.svg</file>
+    <file alias="Resources/delete.svg">C:/Users/user/projects/FileManager/Resources/delete.svg</file>
+    <file alias="Resources/icon.png">C:/Users/user/projects/FileManager/Resources/icon.png</file>
+    <file alias="Resources/move.svg">C:/Users/user/projects/FileManager/Resources/move.svg</file>
+    <file alias="Resources/open.svg">C:/Users/user/projects/FileManager/Resources/open.svg</file>
+    <file alias="Resources/refresh.svg">C:/Users/user/projects/FileManager/Resources/refresh.svg</file>
+    <file alias="Styles/app.qss">C:/Users/user/projects/FileManager/Styles/app.qss</file>
+  </qresource>
+</RCC>
+
