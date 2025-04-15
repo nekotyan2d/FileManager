@@ -1,0 +1,57 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      QT_VERSION: 6.9.0
+      QT_DIR: C:\Qt\6.9.0\mingw_64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          arch: win64_mingw
+          host: windows
+          modules: 'qtbase qtsvg'
+          tools: 'tools_mingw'
+
+      - name: Add MSYS2 to PATH
+        uses: msys2/setup-msys2@v2
+        with:
+          update: false
+          install: mingw-w64-x86_64-toolchain
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH="${{ env.QT_DIR }}"
+
+      - name: Build
+        run: |
+          cmake --build build --config Release
+
+      - name: Run windeployqt
+        run: |
+          $qtBin = "${{ env.QT_DIR }}\bin"
+          & "$qtBin\windeployqt6.exe" --compiler-runtime --release --dir build\bin build\bin\FileManager.exe
+
+      - name: Archive bin directory
+        run: |
+          Compress-Archive -Path build\bin\* -DestinationPath FileManager-win.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FileManager-win
+          path: FileManager-win.zip
