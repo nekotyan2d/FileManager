@@ -1,7 +1,15 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.21)
 project(FileManager LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Svg)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+set(Qt6_DIR "C:/Qt/6.8.2")
+
+find_package(Qt6 6.8.2 REQUIRED COMPONENTS Core Widgets Svg)
 
 qt_standard_project_setup()
 
