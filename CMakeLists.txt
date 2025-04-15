@@ -2,14 +2,15 @@ cmake_minimum_required(VERSION 3.21)
 project(FileManager LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(Qt6_DIR "C:/Qt/6.8.2")
+set(Qt6_DIR "C:/Qt/6.9.0/mingw_64/lib/cmake/Qt6")
 
-find_package(Qt6 6.8.2 REQUIRED COMPONENTS Core Widgets Svg)
+find_package(Qt6 6.9.0 REQUIRED COMPONENTS Core Widgets Svg)
 
 qt_standard_project_setup()
 
@@ -39,9 +40,9 @@ qt_add_resources(FileManager "app_resources"
 
 target_link_libraries(FileManager
     PRIVATE
-        Qt::Core
-        Qt::Widgets
-        Qt::Svg
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::Svg
 )
 
 include(GNUInstallDirs)
