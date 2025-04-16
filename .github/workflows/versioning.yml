@@ -53,24 +53,9 @@ jobs:
         run: | 
           sed -i 's/Unreleased/${{ steps.update_version.outputs.version }}/g' CHANGELOG.md
 
-      - name: Commit and push changes
+      - name: Apply changes
         run: |
           git add version.h CHANGELOG.md
           git commit -m "chore: bump version to ${{ steps.update_version.outputs.version }}"
-          git push
-
-      - name: Create tag
-        run: |
           git tag -a "v${{ steps.update_version.outputs.version }}" -m "Version ${{ steps.update_version.outputs.version }}"
-          git push origin "v${{ steps.update_version.outputs.version }}"
-
-
-      - name: Create pull request
-        id: create_pr
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: release/${{ steps.update_version.outputs.version }}
-          title: "Release: ${{ steps.update_version.outputs.version }} Pull Request"
-          body: "This pull request contains the updated VERSION in version.h"
-          base: main
+          git push origin HEAD "v${{ steps.update_version.outputs.version }}"
