@@ -65,13 +65,27 @@ jobs:
 
       - name: Get version
         id: get_version
+        shell: pwsh
         run: |
-          echo "version=$(grep -oP '(?<=#define VERSION ")\d+\.\d+\.\d+(?=")' version.h)" >> $GITHUB_OUTPUT
+          $version = Select-String '#define VERSION "' version.h | ForEach-Object {
+            ($_ -match '"(\d+\.\d+\.\d+)"') | Out-Null
+            $matches[1]
+          }
+          echo "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Create changelog diff
         id: changelog_diff
+        shell: pwsh
         run: |
-          sed -n "/^## \[${{ steps.get_version.outputs.version }}\]/,/^## \[/p" CHANGELOG.md | head -n -1 > release_notes.md
+          $ver = "${{ steps.get_version.outputs.version }}"
+          $lines = Get-Content CHANGELOG.md
+          $start = ($lines | Select-String "^## \[$ver\]" | Select-Object -First 1).LineNumber
+          $end = ($lines | Select-String "^## \[" | Where-Object { $_.LineNumber -gt $start } | Select-Object -First 1).LineNumber
+          if ($start -and $end) {
+            $lines[($start)..($end-2)] | Set-Content release_notes.md
+          } elseif ($start) {
+            $lines[($start)..($lines.Length-1)] | Set-Content release_notes.md
+          }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
