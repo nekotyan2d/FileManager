@@ -85,6 +85,8 @@ jobs:
             $lines[($start)..($end-2)] | Set-Content release_notes.md
           } elseif ($start) {
             $lines[($start)..($lines.Length-1)] | Set-Content release_notes.md
+          } else {
+            "Version $ver." | Set-Content release_notes.md
           }
 
       - name: Create GitHub Release
