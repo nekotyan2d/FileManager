@@ -34,7 +34,7 @@ jobs:
           setx AQT_CONFIG C:\aqt-config\settings.ini
       - name: Install Qt
         run: |
-          python -m aqt install-qt windows desktop ${{ env.QT_VERSION }} win64_mingw --outputdir C:\Qt --modules qtbase qtsvg --base https://mirrors.tuna.tsinghua.edu.cn/qt/
+          python -m aqt install-qt windows desktop ${{ env.QT_VERSION }} win64_mingw --outputdir C:\Qt --modules qtbase qtsvg --base https://qt-mirror.dannhauer.de/
 
       - name: Add MSYS2 to PATH
         uses: msys2/setup-msys2@v2
