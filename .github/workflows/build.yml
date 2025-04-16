@@ -24,7 +24,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install aqt
-        run: python -m pip install aqtinstall=3.1.19
+        run: python -m pip install aqtinstall==3.1.19
 
       - name: Install Qt
         run: |
