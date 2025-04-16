@@ -58,11 +58,11 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH="${{ env.QT_DIR }}"
+          C:\msys64\mingw64\bin\cmake.exe -S . -B build -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH="${{ env.QT_DIR }}"
 
       - name: Build
         run: |
-          cmake --build build --config Release
+          C:\msys64\mingw64\bin\cmake.exe --build build --config Release --target all -j 14
 
       - name: Run windeployqt
         run: |
