@@ -24,14 +24,14 @@ jobs:
           python-version: "3.11.9"
 
       - name: Install aqt
-        run: python -m pip install aqtinstall==3.1.19
+        run: python -m pip install aqtinstall
 
       - name: Configure aqt
         run: |
           mkdir -p C:\aqt-config
           echo "[requests]" > C:\aqt-config\settings.ini
           echo "INSECURE_NOT_FOR_PRODUCTION_ignore_hash=True" >> C:\aqt-config\settings.ini
-
+          setx AQT_SETTINGS C:\aqt-config\settings.ini
       - name: Install Qt
         run: |
           python -m aqt install-qt windows desktop ${{ env.QT_VERSION }} win64_mingw --outputdir C:\Qt --modules qtbase qtsvg --base https://mirrors.tuna.tsinghua.edu.cn/qt/ -c C:\aqt-config\settings.ini
