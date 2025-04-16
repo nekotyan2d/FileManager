@@ -1,5 +1,6 @@
 QMainWindow {
 	background-color: #212121;
+	color: white;
 }
 
 QPushButton {
@@ -19,6 +20,18 @@ QPushButton:disabled {
 	background-color: #272727;
 }
 
+QToolButton {
+	background-color: transparent;
+	height: 30px;
+	width: 30px;
+	border: none;
+	border-radius: 8px;
+}
+
+QToolButton:hover {
+	background-color: #3e3e3e;
+}
+
 QLineEdit {
 	background-color: #3e3e3e;
 	border-radius: 8px;
@@ -34,12 +47,14 @@ QLineEdit:hover {
 
 QListView {
 	background-color: #212121;
+	color: white;
 }
 
 QTreeView {
 	background-color: #272727;
 	border-radius: 0;
 	padding: 8px 0 8px 8px;
+	color: white;
 }
 
 QTreeView::item {
@@ -61,6 +76,7 @@ QMenu {
 
 QMenu::item {
 	padding: 8px;
+	color: white;
 }
 
 QMenu::item:selected {
