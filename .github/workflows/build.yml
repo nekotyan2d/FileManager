@@ -29,6 +29,10 @@ jobs:
       - name: Download QtSvg
         run: |
           curl -L -o qtsvg.7z https://qt-mirror.dannhauer.de/online/qtsdkrepository/windows_x86/desktop/qt6_690/qt6_690/qt.qt6.690.win64_mingw/6.9.0-0-202503301022qtsvg-Windows-Windows_10_22H2-Mingw-Windows-Windows_10_22H2-X86_64.7z
+      
+      - name: Download Extra
+        run: |
+          curl -L -o extra.7z https://qt-mirror.dannhauer.de/online/qtsdkrepository/windows_x86/desktop/qt6_690/qt6_690/qt.qt6.690.win64_mingw/6.9.0-0-202503301022MinGW-w64-x86_64-13.1.0-release-posix-seh-msvcrt-rt_v11-rev1-runtime.7z
 
       - name: Extract QtBase
         run: |
@@ -41,6 +45,10 @@ jobs:
       - name: Extract QtSvg
         run: |
           7z x qtsvg.7z -oC:\Qt\6.9.0\mingw_64
+
+      - name: Extract Extra
+        run: |
+          7z x extra.7z -oC:\Qt\6.9.0\mingw_64
 
       - name: Add MSYS2 to PATH
         uses: msys2/setup-msys2@v2
