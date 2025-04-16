@@ -59,12 +59,14 @@ jobs:
             mingw-w64-x86_64-cmake
 
       - name: Configure CMake
+        shell: msys2 {0}
         run: |
-          C:\msys64\mingw64\bin\cmake.exe -S . -B build -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH="${{ env.QT_DIR }}"
+          cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH="${QT_DIR}"
 
       - name: Build
+        shell: msys2 {0}
         run: |
-          C:\msys64\mingw64\bin\cmake.exe --build build --config Release --target all -j 14
+          cmake --build build --config Release --target all -j 14
 
       - name: Run windeployqt
         run: |
