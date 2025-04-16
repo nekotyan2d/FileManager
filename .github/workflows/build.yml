@@ -68,6 +68,18 @@ jobs:
         run: |
           cmake --build build --config Release --target all -j 14
 
+      - name: Debug windeployqt
+        shell: cmd
+        run: |
+          dir ${{ env.QT_DIR}}\bin
+          dir build\bin
+
+      - name: Add Qt and MinGW to PATH
+        shell: cmd
+        run: |
+          set PATH=C:\Qt\6.9.0\mingw_64\bin;%PATH%
+          set PATH=C:\Qt\6.9.0\mingw_64\lib;%PATH%
+
       - name: Run windeployqt
         shell: cmd
         run: |
