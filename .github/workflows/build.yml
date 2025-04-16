@@ -18,15 +18,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install aqt
+        run: python -m pip install --upgrade aqtinstall
+
       - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: ${{ env.QT_VERSION }}
-          arch: win64_mingw
-          host: windows
-          modules: "qtbase qtsvg"
-          tools: "tools_mingw"
-          base: "https://mirrors.tuna.tsinghua.edu.cn/qt/"
+        run: |
+          python -m aqt install-qt windows desktop ${{ env.QT_VERSION }} win64_mingw --outputdir C:\Qt --modules qtbase qtsvg --base https://mirrors.tuna.tsinghua.edu.cn/qt/
 
       - name: Add MSYS2 to PATH
         uses: msys2/setup-msys2@v2
