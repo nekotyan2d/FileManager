@@ -28,7 +28,7 @@ jobs:
       - name: Update version
         id: update_version
         run: |
-          current_version=$(grep -oP '(?<=#define VERSION )\d+\.\d+\.\d+' version.h)
+          current_version=$(grep -oP '(?<=#define VERSION ")\d+\.\d+\.\d+(?=")' version.h)
           IFS='.' read -r major minor patch <<< "$current_version"
           case "${{ github.event.inputs.version }}" in
             major)
@@ -45,7 +45,7 @@ jobs:
               ;;
           esac
           new_version="$major.$minor.$patch"
-          sed -i "s/^#define VERSION .*/#define VERSION $new_version/" version.h
+          sed -i "s/^#define VERSION \".*\"/#define VERSION \"$new_version\"/" version.h
           echo "version=$new_version" >> $GITHUB_OUTPUT
 
       - name: Update Changelog

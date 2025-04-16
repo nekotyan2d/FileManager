@@ -62,7 +62,7 @@ jobs:
       - name: Get version
         id: get_version
         run: |
-          echo "version=$(grep -oP '(?<=VERSION )\d+\.\d+\.\d+' version.h)" >> $GITHUB_OUTPUT
+          echo "version=$(grep -oP '(?<=#define VERSION ")\d+\.\d+\.\d+(?=")' version.h)" >> $GITHUB_OUTPUT
 
       - name: Create changelog diff
         id: changelog_diff
