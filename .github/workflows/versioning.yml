@@ -28,9 +28,25 @@ jobs:
       - name: Update version
         id: update_version
         run: |
-          sed -i "s/^#define VERSION .*/#define VERSION ${{ github.event.inputs.version }}/" version.h
-          version=$(grep -oP '(?<=VERSION )\d+\.\d+\.\d+' version.h)
-          echo "version=$version" >> $GITHUB_OUTPUT
+          current_version=$(grep -oP '(?<=#define VERSION )\d+\.\d+\.\d+' version.h)
+          IFS='.' read -r major minor patch <<< "$current_version"
+          case "${{ github.event.inputs.version }}" in
+            major)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            patch)
+              patch=$((patch + 1))
+              ;;
+          esac
+          new_version="$major.$minor.$patch"
+          sed -i "s/^#define VERSION .*/#define VERSION $new_version/" version.h
+          echo "version=$new_version" >> $GITHUB_OUTPUT
 
       - name: Update Changelog
         id: update_changelog
@@ -40,7 +56,7 @@ jobs:
       - name: Commit and push changes
         run: |
           git add version.h CHANGELOG.md
-          git commit -m "Bump version to ${{ steps.update_version.outputs.version }}"
+          git commit -m "chore: bump version to ${{ steps.update_version.outputs.version }}"
           git push
 
       - name: Create tag
