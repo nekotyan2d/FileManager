@@ -1,0 +1,60 @@
+name: Update version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version name'
+        required: true
+        default: 'minor'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Git
+        run: |
+          git config user.name "${{ secrets.NAME}}"
+          git config user.email "${{ secrets.EMAIL }}"
+      
+      - name: Update version
+        id: update_version
+        run: |
+          sed -i "s/^#define VERSION .*/#define VERSION ${{ github.event.inputs.version }}/" version.h
+          version=$(grep -oP '(?<=VERSION )\d+\.\d+\.\d+' version.h)
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Update Changelog
+        id: update_changelog
+        run: | 
+          sed -i 's/Unreleased/${{ steps.update_version.outputs.version }}/g' CHANGELOG.md
+
+      - name: Commit and push changes
+        run: |
+          git add version.h CHANGELOG.md
+          git commit -m "Bump version to ${{ steps.update_version.outputs.version }}"
+          git push
+
+      - name: Create tag
+        run: |
+          git tag -a "v${{ steps.update_version.outputs.version }}" -m "Version ${{ steps.update_version.outputs.version }}"
+          git push origin "v${{ steps.update_version.outputs.version }}"
+
+
+      - name: Create pull request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: release/${{ steps.update_version.outputs.version }}
+          title: "Release: ${{ steps.update_version.outputs.version }} Pull Request"
+          body: "This pull request contains the updated VERSION in version.h"
+          base: main

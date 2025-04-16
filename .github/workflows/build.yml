@@ -2,9 +2,8 @@ name: Build
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
@@ -56,8 +55,29 @@ jobs:
         run: |
           "${{ env.QT_DIR }}\bin\windeployqt6.exe" --compiler-runtime --release --dir build\bin build\bin\FileManager.exe
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create archive
+        run: |
+          Compress-Archive -Path build\bin\* -DestinationPath FileManager-win.zip
+
+      - name: Get version
+        id: get_version
+        run: |
+          echo "version=$(grep -oP '(?<=VERSION )\d+\.\d+\.\d+' version.h)" >> $GITHUB_OUTPUT
+
+      - name: Create changelog diff
+        id: changelog_diff
+        run: |
+          sed -n "/^## \[${{ steps.get_version.outputs.version }}\]/,/^## \[/p" CHANGELOG.md | head -n -1 > release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: FileManager-win
-          path: build\bin
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: Release v${{ steps.get_version.outputs.version }}
+          body_path: ./release_notes.md
+          files: FileManager-win.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete release_notes file
+        run: rm release_notes.md
