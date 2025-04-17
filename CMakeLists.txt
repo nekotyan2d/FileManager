@@ -25,6 +25,7 @@ qt_add_executable(FileManager
     FileModelDelegate.h FileModelDelegate.cpp
     DirTreeDelegate.h DirTreeDelegate.cpp
     FilePreviewWidget.h FilePreviewWidget.cpp FilePreviewWidget.ui
+    ExtendedTreeView.h ExtendedTreeView.cpp
 )
 
 qt_add_resources(FileManager "app_resources"
