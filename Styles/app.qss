@@ -45,6 +45,16 @@ QLineEdit:hover {
 	background-color: #494949;
 }
 
+QTextEdit {
+	background-color: #3e3e3e;
+	color: white;
+	border: none;
+}
+
+QLabel#infoLabel {
+	color: #dbdbdb;
+}
+
 QListView {
 	background-color: #212121;
 	color: white;
