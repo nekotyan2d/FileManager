@@ -123,14 +123,14 @@ QModelIndex DirTreeModel::index(int row, int column, const QModelIndex& parent) 
     }
 
     Node* parentNode = nodeFromIndex(parent);
-    if (!parentNode->populated) {
+    if (!parentNode) {
         return QModelIndex();
     }
 
     if (row >= parentNode->children.count()) {
         return QModelIndex();
     }
-
+    
     return createIndex(row, column, parentNode->children[row]);
 }
 
@@ -148,14 +148,14 @@ QModelIndex DirTreeModel::parent(const QModelIndex& index) const {
 
     Node* grandParentNode = parentNode->parent;
     int row = grandParentNode->children.indexOf(parentNode);
+    
     return createIndex(row, 0, parentNode);
 }
 
 int DirTreeModel::rowCount(const QModelIndex& parent) const {
     Node* parentNode = nodeFromIndex(parent);
-    if (!parentNode->populated) {
+    if (!parentNode)
         return 0;
-    }
     return parentNode->children.count();
 }
 
@@ -190,12 +190,12 @@ QVariant DirTreeModel::data(const QModelIndex& index, int role) const {
 
 bool DirTreeModel::hasChildren(const QModelIndex& parent) const {
     Node* node = nodeFromIndex(parent);
-    if (node->hasChildren == -1) {
-        QDir dir(node->path);
-        dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
-        node->hasChildren = dir.count() > 0 ? 1 : 0;
-    }
-    return node->hasChildren == 1;
+    if (!node) return false;
+    // если не загружено — считаем, что дочерние элементы есть (для отображения стрелки)
+    if (!node->populated)
+        return true;
+    // если уже загружено — проверяем
+    return !node->children.isEmpty();
 }
 
 DirTreeModel::Node* DirTreeModel::nodeFromIndex(const QModelIndex& index) const {
