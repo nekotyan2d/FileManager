@@ -209,6 +209,7 @@ void FileManager::on_refreshButton_clicked() {
 void FileManager::pathChanged(const QString& newPath) {
     ui->pathLineEdit->setText(newPath);
     expandSideTreeToPath(fileModel->currentPath());
+    previewWidget->clear();
 }
 
 
