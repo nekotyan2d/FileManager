@@ -43,6 +43,9 @@ FileManager::FileManager(QWidget *parent)
     ui->deleteButton->setEnabled(false);
     ui->copyButton->setEnabled(false);
     ui->moveButton->setEnabled(false);
+
+    previewWidget = new FilePreviewWidget(this);
+    ui->previewLayout->addWidget(previewWidget);
 }
 
 FileManager::~FileManager()
@@ -83,6 +86,15 @@ void FileManager::on_treeView_doubleClicked(const QModelIndex& index) {
 void FileManager::on_listView_selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
     bool hasSelection = !selected.isEmpty();
     enableActions(hasSelection);
+
+    if (hasSelection) {
+        QModelIndex index = selected.indexes().first();
+        QString path = index.data(Qt::UserRole + 2).toString();
+        bool isDir = index.data(Qt::UserRole + 1).toString() == "Папка";
+        previewWidget->previewFile(path, isDir);
+    } else {
+        previewWidget->clear();
+    }
 }
 
 void FileManager::on_listView_customContextMenuRequested(const QPoint& pos) {

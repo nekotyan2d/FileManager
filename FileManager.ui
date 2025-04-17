@@ -227,7 +227,11 @@
        </layout>
       </widget>
       <widget class="QWidget" name="previewWidget">
-       <layout class="QVBoxLayout" name="previewLayout"/>
+       <layout class="QVBoxLayout" name="previewLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+       </layout>
       </widget>
      </widget>
     </item>

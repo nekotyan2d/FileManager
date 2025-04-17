@@ -13,6 +13,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QTreeView>
+#include "FilePreviewWidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -32,6 +33,7 @@ private:
     Ui::FileManager *ui;
     FileModel* fileModel;
     DirTreeModel* treeModel;
+    FilePreviewWidget* previewWidget;
 
     void expandToIndex(QTreeView* tree, const QModelIndex& index) {
         QModelIndex parent = index;
