@@ -35,6 +35,8 @@ private:
     DirTreeModel* treeModel;
     FilePreviewWidget* previewWidget;
 
+    bool loaded = false;
+
     void expandToIndex(QTreeView* tree, const QModelIndex& index) {
         QModelIndex parent = index;
         while (parent.isValid()) {
@@ -54,7 +56,7 @@ private slots:
     void on_listView_selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
     void on_listView_customContextMenuRequested(const QPoint& pos);
 
-    void on_treeView_doubleClicked(const QModelIndex& index);
+    void on_treeView_clicked(const QModelIndex& index);
 
     void on_deleteButton_clicked();
     void on_moveButton_clicked();

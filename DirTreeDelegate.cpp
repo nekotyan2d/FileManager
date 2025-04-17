@@ -12,45 +12,53 @@ void DirTreeDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
 
     QRect rect = option.rect;
     rect.setX(0);
-    rect.setWidth(option.widget->width());
+    rect.setWidth(option.widget->width() - 6);
 
+    // --- Определяем цвет фона ---
+    QColor background;
     if (opt.state & QStyle::State_Selected) {
-        /*painter->setPen(QColor("#3e3e3e"));
-        painter->drawRoundedRect(rect, 8, 8);*/
-        painter->fillRect(rect, QColor("#3e3e3e"));
+        background = QColor("#3e3e3e");
     }
     else if (opt.state & QStyle::State_MouseOver) {
-        painter->fillRect(rect, QColor("#4b4b4b"));
+        background = QColor("#4b4b4b");
     }
     else {
-        painter->fillRect(rect, opt.palette.base().color());
+        background = opt.palette.base().color();
     }
 
-    QStyleOption branchOption = opt;
+    // Фон всей строки
+    painter->fillRect(rect, background);
+
+    // --- Кастомная стрелка-ветвь ---
+    int branchWidth = 20;
+    QRect branchRect(option.rect.x(), option.rect.y(), branchWidth, option.rect.height());
+
     if (index.model()->hasChildren(index)) {
-        branchOption.state |= QStyle::State_Children;
+        QPoint center(branchRect.center().x(), branchRect.center().y());
+        int size = 8;
+        QPolygon arrow;
+        if (opt.state & QStyle::State_Open) {
+            // ▼ (вниз)
+            arrow << QPoint(center.x() - size/2, center.y() - size/4)
+                  << QPoint(center.x() + size/2, center.y() - size/4)
+                  << QPoint(center.x(), center.y() + size/2);
+        } else {
+            // ▶ (вправо)
+            arrow << QPoint(center.x() - size/4, center.y() - size/2)
+                  << QPoint(center.x() - size/4, center.y() + size/2)
+                  << QPoint(center.x() + size/2, center.y());
+        }
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->setBrush(QColor("#fff"));
+        painter->setPen(Qt::NoPen);
+        painter->drawPolygon(arrow);
     }
-    if (opt.state & QStyle::State_Open) {
-        branchOption.state |= QStyle::State_Open;
-    }
 
-    if (index.model()->rowCount(index.parent()) > index.row() + 1) {
-        branchOption.state |= QStyle::State_Sibling;
-    }
-
-    QRect branchRect = rect;
-    int indentation = 20;
-    branchRect.setWidth(indentation);
-    branchOption.rect = branchRect;
-
-    const QWidget* widget = opt.widget;
-    QStyle* style = widget ? widget->style() : QApplication::style();
-    style->drawPrimitive(QStyle::PE_IndicatorBranch, &branchOption, painter, widget);
-
+    // --- Остальная отрисовка ---
     int padding = 8;
     int iconSize = 16;
-    QRect iconRect(option.rect.x() + padding, option.rect.y(), iconSize, option.rect.height());
-    QRect textRect(option.rect.x() + iconSize + padding + 4, option.rect.y(), option.rect.width() - (iconSize + padding + 4), option.rect.height());
+    QRect iconRect(option.rect.x() + branchWidth + padding, option.rect.y(), iconSize, option.rect.height());
+    QRect textRect(option.rect.x() + branchWidth + iconSize + padding + 4, option.rect.y(), option.rect.width() - (branchWidth + iconSize + padding + 4), option.rect.height());
 
     opt.icon.paint(painter, iconRect, Qt::AlignVCenter);
 

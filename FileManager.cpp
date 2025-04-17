@@ -22,14 +22,44 @@ FileManager::FileManager(QWidget *parent)
 
     ui->listView->setUniformItemSizes(true);
     ui->treeView->setUniformRowHeights(true);
+    ui->treeView->autoScroll = false;
 
     treeModel = new DirTreeModel(nullptr);
     treeModel->setRootToDrives();
 
     initSideBar();
-
+    loaded = false;
+    
     connect(treeModel, &DirTreeModel::dataChanged, this, &FileManager::initSideBar);
     connect(ui->treeView, &QTreeView::expanded, treeModel, &DirTreeModel::loadNode);
+    connect(ui->treeView, &QTreeView::expanded, this, [this](const QModelIndex& index){
+        ui->treeView->setCurrentIndex(index);
+        int childCount = ui->treeView->model()->rowCount(index);
+        if (childCount > 0) {
+            QModelIndex lastChild = ui->treeView->model()->index(childCount - 1, 0, index);
+
+            ui->treeView->autoScroll = false;
+            ui->treeView->scrollTo(index, QAbstractItemView::PositionAtTop);
+            ui->treeView->scrollTo(lastChild, QAbstractItemView::PositionAtBottom);
+            ui->treeView->autoScroll = true;
+        } else {
+            ui->treeView->autoScroll = false;
+            ui->treeView->scrollTo(index, QAbstractItemView::PositionAtTop);
+            ui->treeView->autoScroll = true;
+        }
+    });
+
+    connect(ui->treeView->model(), &QAbstractItemModel::rowsInserted, this,
+    [this](const QModelIndex& parent, int first, int last){
+        if (ui->treeView->isExpanded(parent)) {
+            QModelIndex lastChild = ui->treeView->model()->index(last, 0, parent);
+            ui->treeView->autoScroll = false;
+            ui->treeView->scrollTo(parent, QAbstractItemView::PositionAtTop);
+            ui->treeView->scrollTo(lastChild, QAbstractItemView::PositionAtBottom);
+            ui->treeView->autoScroll = true;
+        }
+    }
+);
 
     ui->treeView->setModel(treeModel);
     ui->treeView->header()->hide();
@@ -73,7 +103,7 @@ void FileManager::on_listView_doubleClicked(const QModelIndex& index) {
     }
 }
 
-void FileManager::on_treeView_doubleClicked(const QModelIndex& index) {
+void FileManager::on_treeView_clicked(const QModelIndex& index) {
     if (!index.isValid()) {
         return;
     }
@@ -179,11 +209,15 @@ void FileManager::on_refreshButton_clicked() {
 void FileManager::pathChanged(const QString& newPath) {
     ui->pathLineEdit->setText(newPath);
     expandSideTreeToPath(fileModel->currentPath());
+    previewWidget->clear();
 }
 
 
 
 void FileManager::initSideBar() {
+    if (loaded) return;
+
+    loaded = true;
     QModelIndex targetIndex = treeModel->expandToPath(fileModel->currentPath());
     if (targetIndex.isValid()) {
         expandToIndex(ui->treeView, targetIndex);

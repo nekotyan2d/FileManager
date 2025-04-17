@@ -35,7 +35,7 @@
       <widget class="QWidget" name="sideWidget">
        <layout class="QVBoxLayout" name="sideLayout">
         <item>
-         <widget class="QTreeView" name="treeView"/>
+         <widget class="ExtendedTreeView" name="treeView"/>
         </item>
        </layout>
       </widget>
@@ -239,6 +239,13 @@
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>ExtendedTreeView</class>
+   <extends>QTreeView</extends>
+   <header location="global">ExtendedTreeView.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
