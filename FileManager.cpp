@@ -6,12 +6,24 @@ FileManager::FileManager(QWidget *parent)
 {
     ui->setupUi(this);
 
+    QStatusBar* statusBar = new QStatusBar(this);
+    statusBar->setSizeGripEnabled(false);
+    ui->contentLayout->addWidget(statusBar);
+
     ui->mainSplitter->setSizes({ 300, 7000, 250});
     ui->mainSplitter->widget(0)->setMinimumWidth(300);
     ui->mainSplitter->widget(2)->setMinimumWidth(250);
 
     fileModel = new FileModel(this);
     connect(fileModel, &FileModel::pathChanged, this, &FileManager::pathChanged);
+    connect(fileModel, &FileModel::loading, this, [=](bool state){
+        if (state) {
+            statusBar->showMessage("Загрузка...");
+        } else {
+            statusBar->showMessage(QString("Элементов: %1").arg(fileModel->rowCount()));
+        }
+    });
+
 
     ui->listView->setModel(fileModel);
     ui->listView->setItemDelegate(new FileModelDelegate(ui->listView));
@@ -100,6 +112,8 @@ void FileManager::on_listView_doubleClicked(const QModelIndex& index) {
     if (fileInfo.isDir()) {
         fileModel->setPath(fullPath);
         enableActions(false);
+    } else {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath));
     }
 }
 

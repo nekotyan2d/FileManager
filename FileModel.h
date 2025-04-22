@@ -7,6 +7,8 @@
 #include <QFileIconProvider>
 #include <QMessageBox>
 #include <vector>
+#include <QThread>
+#include "FileModelWorker.h"
 
 class FileModel : public QAbstractItemModel
 {
@@ -36,12 +38,11 @@ public:
     };
 signals:
     void pathChanged(const QString& newPath);
+    void loading(bool state);
 private:
     QDir currentDir;
     std::vector<File> fileList;
 
-
-    void refreshModel();
     QString sizeToString(qint64 size) const;
 };
 

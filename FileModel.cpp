@@ -17,20 +17,31 @@ void FileModel::setPath(const QString& path)
     beginResetModel();
     currentDir.setPath(path);
     emit pathChanged(path);
-    refreshModel();
-    endResetModel();
-}
+    
+    emit loading(true);
 
-void FileModel::refreshModel()
-{
-    fileList.clear();
-    for (const auto& file : currentDir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot,
-                                                     QDir::Name | QDir::DirsFirst)) {
-        File f;
-        f.info = file;
-        f.icon = QFileIconProvider().icon(file);
-        fileList.push_back(f);
-    }
+    QThread* thread = new QThread;
+    FileModelWorker* worker = new FileModelWorker(path);
+    worker->moveToThread(thread);
+
+    connect(thread, &QThread::started, worker, &FileModelWorker::process);
+    connect(worker, &FileModelWorker::finished, this, [=](const QFileInfoList& list) {
+        fileList.clear();
+        for (const auto& file : list) {
+            File f;
+            f.info = file;
+            f.icon = QFileIconProvider().icon(file);
+            fileList.push_back(f);
+        }
+        endResetModel();
+        emit loading(false);
+
+        worker->deleteLater();
+        thread->quit();
+        thread->deleteLater();
+    });
+
+    thread->start();
 }
 
 QModelIndex FileModel::index(int row, int column, const QModelIndex& parent) const

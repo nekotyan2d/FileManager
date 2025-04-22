@@ -14,6 +14,8 @@
 #include <QFileDialog>
 #include <QTreeView>
 #include "FilePreviewWidget.h"
+#include <QStatusBar>
+#include <QDesktopServices>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
