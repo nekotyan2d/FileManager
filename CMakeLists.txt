@@ -37,6 +37,8 @@ qt_add_resources(FileManager "app_resources"
         Resources/move.svg
         Resources/open.svg
         Resources/refresh.svg
+        Resources/arrow-down.svg
+        Resources/arrow-right.svg
         Styles/app.qss
 )
 

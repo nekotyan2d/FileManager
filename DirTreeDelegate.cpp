@@ -14,7 +14,7 @@ void DirTreeDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
     rect.setX(0);
     rect.setWidth(option.widget->width() - 6);
 
-    // --- Определяем цвет фона ---
+    // цвет фона
     QColor background;
     if (opt.state & QStyle::State_Selected) {
         background = QColor("#3e3e3e");
@@ -26,35 +26,26 @@ void DirTreeDelegate::paint(QPainter* painter, const QStyleOptionViewItem& optio
         background = opt.palette.base().color();
     }
 
-    // Фон всей строки
     painter->fillRect(rect, background);
 
-    // --- Кастомная стрелка-ветвь ---
+    // стрелка
     int branchWidth = 20;
     QRect branchRect(option.rect.x(), option.rect.y(), branchWidth, option.rect.height());
 
     if (index.model()->hasChildren(index)) {
         QPoint center(branchRect.center().x(), branchRect.center().y());
         int size = 8;
-        QPolygon arrow;
+        QIcon icon;
         if (opt.state & QStyle::State_Open) {
-            // ▼ (вниз)
-            arrow << QPoint(center.x() - size/2, center.y() - size/4)
-                  << QPoint(center.x() + size/2, center.y() - size/4)
-                  << QPoint(center.x(), center.y() + size/2);
+            //вниз
+            icon = QIcon(":/FileManager/Resources/arrow-down.svg");
         } else {
-            // ▶ (вправо)
-            arrow << QPoint(center.x() - size/4, center.y() - size/2)
-                  << QPoint(center.x() - size/4, center.y() + size/2)
-                  << QPoint(center.x() + size/2, center.y());
+            // вправо
+            icon = QIcon(":/FileManager/Resources/arrow-right.svg");
         }
-        painter->setRenderHint(QPainter::Antialiasing, true);
-        painter->setBrush(QColor("#fff"));
-        painter->setPen(Qt::NoPen);
-        painter->drawPolygon(arrow);
+        painter->drawImage(center.x() - size / 2, center.y() - size / 2, icon.pixmap(size, size).toImage());
     }
 
-    // --- Остальная отрисовка ---
     int padding = 8;
     int iconSize = 16;
     QRect iconRect(option.rect.x() + branchWidth + padding, option.rect.y(), iconSize, option.rect.height());
