@@ -8,7 +8,8 @@
 #include <QMessageBox>
 #include <vector>
 #include <QThread>
-#include "FileModelWorker.h"
+#include <QFuture>
+#include <QtConcurrent>
 
 class FileModel : public QAbstractItemModel
 {
@@ -44,6 +45,8 @@ private:
     std::vector<File> fileList;
 
     QString sizeToString(qint64 size) const;
+    bool copyDirectory(QString source, QString destination, bool overwrite = false);
+    QFileIconProvider iconProvider;
 };
 
 #endif // FILEMODEL_H

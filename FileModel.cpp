@@ -6,6 +6,7 @@ FileModel::FileModel(QObject* parent)
     : QAbstractItemModel(parent)
 {
     setPath(QDir::homePath());
+    qDebug() << "test!";
 }
 
 FileModel::~FileModel()
@@ -16,32 +17,38 @@ void FileModel::setPath(const QString& path)
 {
     beginResetModel();
     currentDir.setPath(path);
+
+    // вызываем сигнал об изменении пути
     emit pathChanged(path);
     
+    // включаем загрузку
     emit loading(true);
 
-    QThread* thread = new QThread;
-    FileModelWorker* worker = new FileModelWorker(path);
-    worker->moveToThread(thread);
-
-    connect(thread, &QThread::started, worker, &FileModelWorker::process);
-    connect(worker, &FileModelWorker::finished, this, [=](const QFileInfoList& list) {
+    auto future = QtConcurrent::run([=]() {
+        QDir dir(path);
+        // загружаем список файлов с сортировкой по имени и папкам
+        QFileInfoList list = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries, QDir::DirsFirst | QDir::Name);
+        return list;
+    }).then([=](const QFileInfoList& list) {
         fileList.clear();
-        for (const auto& file : list) {
+        for (const auto file : list) {
             File f;
             f.info = file;
-            f.icon = QFileIconProvider().icon(file);
+
+            // плейсхолдер для иконки
+            f.icon = QIcon(":/FileManager/Resources/icon.png");
             fileList.push_back(f);
+        }
+        for(auto &file : fileList){
+            // загружаем иконку в отдельном потоке
+            auto future = QtConcurrent::run([=](){
+                return iconProvider.icon(file.info);
+            });
+            file.icon = future.result();
         }
         endResetModel();
         emit loading(false);
-
-        worker->deleteLater();
-        thread->quit();
-        thread->deleteLater();
     });
-
-    thread->start();
 }
 
 QModelIndex FileModel::index(int row, int column, const QModelIndex& parent) const
@@ -83,9 +90,9 @@ QVariant FileModel::data(const QModelIndex& index, int role) const
         return file.info.isDir() ? "Папка" : file.info.completeSuffix();
     case Qt::UserRole + 2: // путь
         return file.info.absoluteFilePath();
-    case Qt::UserRole + 3:
+    case Qt::UserRole + 3: // отформатированный размер
         return file.info.isDir() ? QVariant() : sizeToString(file.info.size());
-    case Qt::UserRole + 4:
+    case Qt::UserRole + 4: // последнее изменение
         return file.info.lastModified().toString("dd.MM.yyyy hh:mm");
     default:
         return QVariant();
@@ -93,10 +100,10 @@ QVariant FileModel::data(const QModelIndex& index, int role) const
 }
 
 QString FileModel::sizeToString(qint64 size) const {
-    const quint64 KB = 1024;
-    const quint64 MB = KB * 1024;
-    const quint64 GB = MB * 1024;
-    const quint64 TB = GB * 1024;
+    const qint64 KB = 1024;
+    const qint64 MB = KB * 1024;
+    const qint64 GB = MB * 1024;
+    const qint64 TB = GB * 1024;
 
     if (size < KB) {
         return QString("%1 Б").arg(size);
@@ -119,7 +126,7 @@ bool FileModel::deleteFile(const QModelIndex& index) {
     if (!index.isValid()) {
         return false;
     }
-
+    // спрашиваем пользователя
     if (QMessageBox::question(nullptr, "Удаление", "Вы уверены, что хотите удалить файл?", QMessageBox::Yes | QMessageBox::Cancel) == QMessageBox::No) {
         return false;
     }
@@ -129,6 +136,7 @@ bool FileModel::deleteFile(const QModelIndex& index) {
 
     beginRemoveRows(QModelIndex(), index.row(), index.row());
 
+    // проверяем, является ли файл директорией или файлом, в случае директории удаляем рекурсивно файлы в ней
     if (file.info.isDir()) {
         QDir dir(file.info.absoluteFilePath());
         success = dir.removeRecursively();
@@ -177,6 +185,38 @@ bool FileModel::moveFile(const QModelIndex& index, const QString& newPath) {
     return success;
 }
 
+bool FileModel::copyDirectory(QString source, QString destination, bool overwrite){
+    QDir sourceDir(source);
+    QDir destinationDir(destination);
+
+    if (!sourceDir.exists()) {
+        return false;
+    }
+
+    if(destinationDir.exists() && !overwrite)
+    {
+        return false;
+    }
+    else if(destinationDir.exists() && overwrite)
+    {
+        // очищаем директорию назначения
+        destinationDir.removeRecursively();
+    }
+
+    QDir().mkpath(destination);
+
+    for (QString directoryName : sourceDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+        QString destinationPath = destination + "/" + directoryName;
+        copyDirectory(source + "/" + directoryName, destinationPath, overwrite);
+    }
+
+    for (QString fileName : sourceDir.entryList(QDir::Files)) {
+        QFile::copy(source + "/" + fileName, destination + "/" + fileName);
+    }
+
+    return true;
+}
+
 bool FileModel::copyFile(const QModelIndex& index, const QString& path) {
     if (!index.isValid()) {
         return false;
@@ -184,13 +224,22 @@ bool FileModel::copyFile(const QModelIndex& index, const QString& path) {
 
     File file = fileList.at(index.row());
     bool success = false;
+    bool overwrite = false;
 
-    QString newFilePath = path + "/" + file.info.fileName();
+    if(QFile::exists(path + "/" + file.info.fileName())){
+        // файл существует, спрашиваем пользователя
+        overwrite = QMessageBox::question(nullptr, "Копирование", "Файл существует. Перезаписать?", QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok;
+    }   
+
     if (file.info.isDir()) {
-        // доделать
+        success = copyDirectory(file.info.absoluteFilePath(), path + "/" + file.info.fileName(), overwrite);
     }
     else {
-        success = QFile::copy(file.info.absoluteFilePath(), newFilePath);
+        if (overwrite) {
+            // удаляем существующий файл
+            QFile::remove(path + "/" + file.info.fileName());
+        }
+        success = QFile::copy(file.info.absoluteFilePath(), path + "/" + file.info.fileName());
     }
 
     if (QMessageBox::question(nullptr, "Копирование", "Перейти к файлу?", QMessageBox::Open | QMessageBox::Cancel) == QMessageBox::Open) {

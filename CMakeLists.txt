@@ -10,7 +10,7 @@ set(CMAKE_AUTORCC ON)
 
 set(Qt6_DIR "C:/Qt/6.9.0/mingw_64/lib/cmake/Qt6")
 
-find_package(Qt6 6.9.0 REQUIRED COMPONENTS Core Widgets Svg)
+find_package(Qt6 6.9.0 REQUIRED COMPONENTS Core Widgets Svg Concurrent)
 
 qt_standard_project_setup()
 
@@ -26,7 +26,6 @@ qt_add_executable(FileManager
     DirTreeDelegate.h DirTreeDelegate.cpp
     FilePreviewWidget.h FilePreviewWidget.cpp FilePreviewWidget.ui
     ExtendedTreeView.h ExtendedTreeView.cpp
-    FileModelWorker.h FileModelWorker.cpp
 )
 
 qt_add_resources(FileManager "app_resources"
@@ -46,6 +45,7 @@ target_link_libraries(FileManager
         Qt6::Core
         Qt6::Widgets
         Qt6::Svg
+        Qt6::Concurrent
 )
 
 include(GNUInstallDirs)

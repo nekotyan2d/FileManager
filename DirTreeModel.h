@@ -8,25 +8,8 @@
 #include <QThread>
 #include <QObject>
 #include <QCoreApplication>
-
-class Worker : public QObject {
-    Q_OBJECT
-public:
-    explicit Worker(const QString& path, QObject* parent = nullptr) : QObject(parent), m_path(path) {}
-
-public slots:
-    void process() {
-        QDir dir(m_path);
-        QFileInfoList dirList = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-        emit finished(dirList);
-    }
-
-signals:
-    void finished(const QFileInfoList& dirList);
-
-private:
-    QString m_path;
-};
+#include <QtConcurrent>
+#include <QFuture>
 
 class DirTreeModel : public QAbstractItemModel
 {
@@ -42,7 +25,7 @@ public:
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override { return 1; };
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool hasChildren(const QModelIndex& parent = QModelIndex()) const override;
 private:
@@ -54,7 +37,6 @@ private:
         QIcon icon;
 
         bool populated = false;
-        bool isDrive = false;
         bool isLoading = false;
 
         int hasChildren = -1; // -1 - неизвестно, 0 - нет, 1 - да
@@ -69,14 +51,13 @@ private:
 
     mutable QHash<QString, Node*> nodeCache;
 
-    QHash<Node*, Worker*> activeWorkers;
-
     void populateNode(Node* node);
     Node* nodeFromIndex(const QModelIndex& index) const;
     QModelIndex indexForNode(Node* node) const;
+
+    QFileIconProvider iconProvider;
 private slots:
-    void onPopulateFinished(const QFileInfoList& dirList);
-    void onWorkerDestroyed(QObject* worker);
+    void onPopulateFinished(Node* node, const QFileInfoList& dirList);
 };
 
 #endif // DIRTREEMODEL_H
