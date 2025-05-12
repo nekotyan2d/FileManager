@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-FileModel::FileModel(QObject* parent)
+FileModel::FileModel(QObject *parent)
     : QAbstractItemModel(parent)
 {
     setPath(QDir::homePath());
@@ -13,23 +13,25 @@ FileModel::~FileModel()
 {
 }
 
-void FileModel::setPath(const QString& path)
+void FileModel::setPath(const QString &path)
 {
     beginResetModel();
     currentDir.setPath(path);
 
     // вызываем сигнал об изменении пути
     emit pathChanged(path);
-    
+
     // включаем загрузку
     emit loading(true);
 
-    auto future = QtConcurrent::run([=]() {
+    auto future = QtConcurrent::run([=]()
+                                    {
         QDir dir(path);
         // загружаем список файлов с сортировкой по имени и папкам
         QFileInfoList list = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries, QDir::DirsFirst | QDir::Name);
-        return list;
-    }).then([=](const QFileInfoList& list) {
+        return list; })
+                      .then([=](const QFileInfoList &list)
+                            {
         fileList.clear();
         for (const auto file : list) {
             File f;
@@ -47,11 +49,10 @@ void FileModel::setPath(const QString& path)
             file.icon = future.result();
         }
         endResetModel();
-        emit loading(false);
-    });
+        emit loading(false); });
 }
 
-QModelIndex FileModel::index(int row, int column, const QModelIndex& parent) const
+QModelIndex FileModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent) || parent.isValid())
         return QModelIndex();
@@ -59,27 +60,28 @@ QModelIndex FileModel::index(int row, int column, const QModelIndex& parent) con
     return createIndex(row, column);
 }
 
-QModelIndex FileModel::parent(const QModelIndex& index) const
+QModelIndex FileModel::parent(const QModelIndex &index) const
 {
     Q_UNUSED(index);
     return QModelIndex();
 }
 
-int FileModel::rowCount(const QModelIndex& parent) const
+int FileModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
     return fileList.size();
 }
 
-QVariant FileModel::data(const QModelIndex& index, int role) const
+QVariant FileModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
 
-    const File& file = fileList.at(index.row());
+    const File &file = fileList.at(index.row());
 
-    switch (role) {
+    switch (role)
+    {
     case Qt::DisplayRole:
         return file.info.fileName();
     case Qt::DecorationRole:
@@ -99,35 +101,44 @@ QVariant FileModel::data(const QModelIndex& index, int role) const
     }
 }
 
-QString FileModel::sizeToString(qint64 size) const {
+QString FileModel::sizeToString(qint64 size) const
+{
     const qint64 KB = 1024;
     const qint64 MB = KB * 1024;
     const qint64 GB = MB * 1024;
     const qint64 TB = GB * 1024;
 
-    if (size < KB) {
+    if (size < KB)
+    {
         return QString("%1 Б").arg(size);
     }
-    else if (size < MB) {
+    else if (size < MB)
+    {
         return QString("%1 КБ").arg(size / KB);
     }
-    else if (size < GB) {
+    else if (size < GB)
+    {
         return QString("%1 МБ").arg(size / MB);
     }
-    else if (size < TB) {
+    else if (size < TB)
+    {
         return QString("%1 ГБ").arg(size / GB);
     }
-    else {
+    else
+    {
         return QString("%1 ТБ").arg(size / TB);
     }
 }
 
-bool FileModel::deleteFile(const QModelIndex& index) {
-    if (!index.isValid()) {
+bool FileModel::deleteFile(const QModelIndex &index)
+{
+    if (!index.isValid())
+    {
         return false;
     }
     // спрашиваем пользователя
-    if (QMessageBox::question(nullptr, "Удаление", "Вы уверены, что хотите удалить файл?", QMessageBox::Yes | QMessageBox::Cancel) == QMessageBox::No) {
+    if (QMessageBox::question(nullptr, "Удаление", "Вы уверены, что хотите удалить файл?", QMessageBox::Yes | QMessageBox::Cancel) == QMessageBox::Cancel)
+    {
         return false;
     }
 
@@ -137,15 +148,18 @@ bool FileModel::deleteFile(const QModelIndex& index) {
     beginRemoveRows(QModelIndex(), index.row(), index.row());
 
     // проверяем, является ли файл директорией или файлом, в случае директории удаляем рекурсивно файлы в ней
-    if (file.info.isDir()) {
+    if (file.info.isDir())
+    {
         QDir dir(file.info.absoluteFilePath());
         success = dir.removeRecursively();
     }
-    else {
+    else
+    {
         success = QFile::remove(file.info.absoluteFilePath());
     }
 
-    if (success) {
+    if (success)
+    {
         fileList.erase(fileList.begin() + index.row());
     }
 
@@ -154,8 +168,10 @@ bool FileModel::deleteFile(const QModelIndex& index) {
     return success;
 }
 
-bool FileModel::moveFile(const QModelIndex& index, const QString& newPath) {
-    if (!index.isValid()) {
+bool FileModel::moveFile(const QModelIndex &index, const QString &newPath)
+{
+    if (!index.isValid())
+    {
         return false;
     }
 
@@ -164,40 +180,46 @@ bool FileModel::moveFile(const QModelIndex& index, const QString& newPath) {
 
     beginRemoveRows(QModelIndex(), index.row(), index.row());
     QString newFilePath = newPath + "/" + file.info.fileName();
-    if (file.info.isDir()) {
+    if (file.info.isDir())
+    {
         QDir dir(file.info.absoluteFilePath());
         success = dir.rename(file.info.absoluteFilePath(), newFilePath);
     }
-    else {
+    else
+    {
         success = QFile::rename(file.info.absoluteFilePath(), newFilePath);
     }
 
-    if (success) {
+    if (success)
+    {
         fileList.erase(fileList.begin() + index.row());
     }
 
     endRemoveRows();
 
-    if (QMessageBox::question(nullptr, "Перемещение", "Перейти к файлу?", QMessageBox::Open | QMessageBox::Cancel) == QMessageBox::Open) {
+    if (QMessageBox::question(nullptr, "Перемещение", "Перейти к файлу?", QMessageBox::Open | QMessageBox::Cancel) == QMessageBox::Open)
+    {
         setPath(newPath);
     }
 
     return success;
 }
 
-bool FileModel::copyDirectory(QString source, QString destination, bool overwrite){
+bool FileModel::copyDirectory(QString source, QString destination, bool overwrite)
+{
     QDir sourceDir(source);
     QDir destinationDir(destination);
 
-    if (!sourceDir.exists()) {
-        return false;
-    }
-
-    if(destinationDir.exists() && !overwrite)
+    if (!sourceDir.exists())
     {
         return false;
     }
-    else if(destinationDir.exists() && overwrite)
+
+    if (destinationDir.exists() && !overwrite)
+    {
+        return false;
+    }
+    else if (destinationDir.exists() && overwrite)
     {
         // очищаем директорию назначения
         destinationDir.removeRecursively();
@@ -205,20 +227,24 @@ bool FileModel::copyDirectory(QString source, QString destination, bool overwrit
 
     QDir().mkpath(destination);
 
-    for (QString directoryName : sourceDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+    for (QString directoryName : sourceDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+    {
         QString destinationPath = destination + "/" + directoryName;
         copyDirectory(source + "/" + directoryName, destinationPath, overwrite);
     }
 
-    for (QString fileName : sourceDir.entryList(QDir::Files)) {
+    for (QString fileName : sourceDir.entryList(QDir::Files))
+    {
         QFile::copy(source + "/" + fileName, destination + "/" + fileName);
     }
 
     return true;
 }
 
-bool FileModel::copyFile(const QModelIndex& index, const QString& path) {
-    if (!index.isValid()) {
+bool FileModel::copyFile(const QModelIndex &index, const QString &path)
+{
+    if (!index.isValid())
+    {
         return false;
     }
 
@@ -226,23 +252,28 @@ bool FileModel::copyFile(const QModelIndex& index, const QString& path) {
     bool success = false;
     bool overwrite = false;
 
-    if(QFile::exists(path + "/" + file.info.fileName())){
+    if (QFile::exists(path + "/" + file.info.fileName()))
+    {
         // файл существует, спрашиваем пользователя
         overwrite = QMessageBox::question(nullptr, "Копирование", "Файл существует. Перезаписать?", QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok;
-    }   
+    }
 
-    if (file.info.isDir()) {
+    if (file.info.isDir())
+    {
         success = copyDirectory(file.info.absoluteFilePath(), path + "/" + file.info.fileName(), overwrite);
     }
-    else {
-        if (overwrite) {
+    else
+    {
+        if (overwrite)
+        {
             // удаляем существующий файл
             QFile::remove(path + "/" + file.info.fileName());
         }
         success = QFile::copy(file.info.absoluteFilePath(), path + "/" + file.info.fileName());
     }
 
-    if (QMessageBox::question(nullptr, "Копирование", "Перейти к файлу?", QMessageBox::Open | QMessageBox::Cancel) == QMessageBox::Open) {
+    if (QMessageBox::question(nullptr, "Копирование", "Перейти к файлу?", QMessageBox::Open | QMessageBox::Cancel) == QMessageBox::Open)
+    {
         setPath(path);
     }
 
