@@ -14,6 +14,10 @@ find_package(Qt6 6.9.0 REQUIRED COMPONENTS Core Widgets Svg Concurrent)
 
 qt_standard_project_setup()
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set (APP_ICON ${CMAKE_CURRENT_SOURCE_DIR}/Resources/app.rc)
+endif()
+
 qt_add_executable(FileManager
     WIN32 MACOSX_BUNDLE
     main.cpp
@@ -26,6 +30,7 @@ qt_add_executable(FileManager
     DirTreeDelegate.h DirTreeDelegate.cpp
     FilePreviewWidget.h FilePreviewWidget.cpp FilePreviewWidget.ui
     ExtendedTreeView.h ExtendedTreeView.cpp
+    ${APP_ICON}
 )
 
 qt_add_resources(FileManager "app_resources"
