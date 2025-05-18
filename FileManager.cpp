@@ -149,9 +149,11 @@ void FileManager::on_listView_customContextMenuRequested(const QPoint& pos) {
 
     QMenu contextMenu(this);
     QAction* openAction = contextMenu.addAction("Открыть");
+    QAction* copyAction = contextMenu.addAction("Копировать");
     QAction* moveAction = contextMenu.addAction("Переместить");
     QAction* deleteAction = contextMenu.addAction("Удалить");
     openAction->setIcon(QIcon(":/FileManager/Resources/open.svg"));
+    copyAction->setIcon(QIcon(":/FileManager/Resources/copy.svg"));
     moveAction->setIcon(QIcon(":/FileManager/Resources/move.svg"));
     deleteAction->setIcon(QIcon(":/FileManager/Resources/delete.svg"));
 
