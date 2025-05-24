@@ -6,7 +6,7 @@ ChooseDirWindow::ChooseDirWindow(QWidget *parent) : FileManager(parent)
     delete previewWidget;
     previewWidget = nullptr;
     ui->mainSplitter->setSizes({300, 7000});
-    
+
     delete ui->copyButton;
     ui->copyButton = nullptr;
     delete ui->moveButton;
@@ -17,38 +17,36 @@ ChooseDirWindow::ChooseDirWindow(QWidget *parent) : FileManager(parent)
     delete ui->horizontalLayout;
     ui->horizontalLayout = nullptr;
 
-
     window()->setWindowFlags(Qt::Dialog);
 
     actionsWidget = new QWidget();
     actionsLayout = new QHBoxLayout(actionsWidget);
     folderNameEdit = new QLineEdit(this);
     openBtn = new QPushButton(this);
-    openBtn->setText("Открыть");
+    openBtn->setText("Выбрать");
 
     actionsLayout->addWidget(folderNameEdit);
     actionsLayout->addWidget(openBtn);
 
     ui->contentLayout->addWidget(actionsWidget);
 
-    connect(ui->listView, &QListView::clicked, this, [=](const QModelIndex &index){
+    connect(ui->listView, &QListView::clicked, this, [=](const QModelIndex &index)
+            {
         QString fullPath = index.data(Qt::UserRole + 2).toString();
         QFileInfo fileInfo(fullPath);
         if (fileInfo.isDir())
         {
             folderNameEdit->setText(fileInfo.fileName());
-        }
-    });
+        } });
 
-    connect(openBtn, &QPushButton::clicked, this, [this]() {
-        selectedPath = folderNameEdit->text();
-        accept();
-    });
+    connect(openBtn, &QPushButton::clicked, this, [this]()
+            {
+        selectedPath = fileModel->currentPath() + "/" + folderNameEdit->text();
+        accept(); });
 }
 
 ChooseDirWindow::~ChooseDirWindow()
 {
-    delete ui;
 }
 
 int ChooseDirWindow::exec()
@@ -57,13 +55,13 @@ int ChooseDirWindow::exec()
     show();
 
     QEventLoop loop;
-    // Connect accept/reject to loop.quit
+
     connect(this, &ChooseDirWindow::accepted, &loop, &QEventLoop::quit);
     connect(this, &ChooseDirWindow::rejected, &loop, &QEventLoop::quit);
 
     loop.exec();
 
-    return dialogResult; // 1 for Accepted, 0 for Rejected
+    return dialogResult; // 1 - accepted, 0 - rejected
 }
 
 void ChooseDirWindow::closeEvent(QCloseEvent *event)
@@ -97,8 +95,10 @@ QString ChooseDirWindow::chooseDirPath(QWidget *parent, QString dir)
     return QString();
 }
 
-void ChooseDirWindow::pathChanged(const QString &newPath){
+void ChooseDirWindow::pathChanged(const QString &newPath)
+{
     fileModel->setPath(newPath);
     ui->pathLineEdit->setText(newPath);
-    folderNameEdit->setText(newPath);
+    folderNameEdit->setText("");
+    qDebug() << "path changed";
 }

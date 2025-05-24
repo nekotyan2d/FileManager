@@ -98,7 +98,7 @@ FileManager::FileManager(QWidget *parent)
 
 FileManager::~FileManager()
 {
-    delete ui;
+    // delete ui;
 }
 
 void FileManager::on_pathLineEdit_returnPressed()
@@ -150,11 +150,13 @@ void FileManager::on_listView_selectionChanged(const QItemSelection &selected, c
         QModelIndex index = selected.indexes().first();
         QString path = index.data(Qt::UserRole + 2).toString();
         bool isDir = index.data(Qt::UserRole + 1).toString() == "Папка";
-        if(previewWidget) previewWidget->previewFile(path, isDir);
+        if (previewWidget)
+            previewWidget->previewFile(path, isDir);
     }
     else
     {
-        if(previewWidget) previewWidget->clear();
+        if (previewWidget)
+            previewWidget->clear();
     }
 }
 
@@ -193,7 +195,7 @@ void FileManager::on_listView_customContextMenuRequested(const QPoint &pos)
 
 void FileManager::enableActions(bool enable)
 {
-    if(ui->deleteButton == nullptr || ui->copyButton == nullptr || ui->moveButton == nullptr)
+    if (ui->deleteButton == nullptr || ui->copyButton == nullptr || ui->moveButton == nullptr)
         return;
     ui->deleteButton->setEnabled(enable);
     ui->copyButton->setEnabled(enable);
@@ -264,7 +266,8 @@ void FileManager::pathChanged(const QString &newPath)
 {
     ui->pathLineEdit->setText(newPath);
     expandSideTreeToPath(fileModel->currentPath());
-    if(previewWidget) previewWidget->clear();
+    if (previewWidget)
+        previewWidget->clear();
 }
 
 void FileManager::initSideBar()
