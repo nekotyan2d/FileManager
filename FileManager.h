@@ -38,11 +38,9 @@ public:
 protected:
     Ui::FileManager *ui;
     FilePreviewWidget *previewWidget;
-
-private:
     FileModel *fileModel;
     DirTreeModel *treeModel;
-
+private:
     bool loaded = false;
 
     void expandToIndex(QTreeView *tree, const QModelIndex &index)
