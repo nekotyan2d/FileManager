@@ -30,6 +30,7 @@ qt_add_executable(FileManager
     DirTreeDelegate.h DirTreeDelegate.cpp
     FilePreviewWidget.h FilePreviewWidget.cpp FilePreviewWidget.ui
     ExtendedTreeView.h ExtendedTreeView.cpp
+    ChooseDirWindow.h ChooseDirWindow.cpp
     ${APP_ICON}
 )
 
