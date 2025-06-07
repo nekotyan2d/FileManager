@@ -43,6 +43,8 @@ ChooseDirWindow::ChooseDirWindow(QWidget *parent) : FileManager(parent)
             {
         selectedPath = fileModel->currentPath() + "/" + folderNameEdit->text();
         accept(); });
+
+    connect(fileModel, &FileModel::pathChanged, this, &ChooseDirWindow::pathChanged);
 }
 
 ChooseDirWindow::~ChooseDirWindow()
@@ -84,10 +86,11 @@ void ChooseDirWindow::reject()
     close();
 }
 
-QString ChooseDirWindow::chooseDirPath(QWidget *parent, QString dir)
+QString ChooseDirWindow::chooseDirPath(QWidget *parent, QString dir, QString title)
 {
     ChooseDirWindow window(parent);
-    window.fileModel->setPath(dir.isEmpty() ? QDir::homePath() : dir);
+    window.fileModel->setPath(dir);
+    window.window()->setWindowTitle(title);
     if (window.exec() == 1)
     {
         return window.selectedPath;
@@ -97,8 +100,5 @@ QString ChooseDirWindow::chooseDirPath(QWidget *parent, QString dir)
 
 void ChooseDirWindow::pathChanged(const QString &newPath)
 {
-    fileModel->setPath(newPath);
-    ui->pathLineEdit->setText(newPath);
     folderNameEdit->setText("");
-    qDebug() << "path changed";
 }

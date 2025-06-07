@@ -6,12 +6,6 @@ FileManager::FileManager(QWidget *parent)
 {
     ui->setupUi(this);
 
-    connect(ui->testBtn, &QPushButton::clicked, this, [=]()
-            {
-        ChooseDirWindow* window = new ChooseDirWindow(this);
-        window->setWindowTitle("Копировать в");
-        window->show(); });
-
     QStatusBar *statusBar = new QStatusBar(this);
     statusBar->setSizeGripEnabled(false);
     ui->contentLayout->addWidget(statusBar);
@@ -229,7 +223,7 @@ void FileManager::on_deleteButton_clicked()
 
 void FileManager::on_moveButton_clicked()
 {
-    QString targetPath = ChooseDirWindow::chooseDirPath(this, fileModel->currentPath());
+    QString targetPath = ChooseDirWindow::chooseDirPath(this, fileModel->currentPath(), "Переместить в");
     if (targetPath.isEmpty())
     {
         return;
@@ -244,7 +238,7 @@ void FileManager::on_moveButton_clicked()
 
 void FileManager::on_copyButton_clicked()
 {
-    QString targetPath = ChooseDirWindow::chooseDirPath(this, fileModel->currentPath());
+    QString targetPath = ChooseDirWindow::chooseDirPath(this, fileModel->currentPath(), "Копировать в");
     if (targetPath.isEmpty())
     {
         return;

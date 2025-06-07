@@ -1,5 +1,5 @@
 #include "FileManager.h"
-#include "QDialog"
+#include <QDialog>
 #include <QEventLoop>
 
 class ChooseDirWindow : public FileManager
@@ -9,7 +9,7 @@ public:
     explicit ChooseDirWindow(QWidget *parent = nullptr);
     ~ChooseDirWindow();
 
-    static QString chooseDirPath(QWidget *parent, QString dir);
+    static QString chooseDirPath(QWidget *parent, QString dir, QString title);
     int exec();
 signals:
     void accepted();
